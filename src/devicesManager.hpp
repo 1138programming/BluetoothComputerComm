@@ -25,8 +25,8 @@ class DevicesManager {
         std::vector<BLUETOOTH_DEVICE_INFO> devices;
     public:
         /**
-         * @return SOCKET ERORR: -1
-         * @return SUCCESS: 0
+         * @return SOCKET ERORR: -1 = NO DEVICES CONNECTED
+         * @return  &&  SUCCESS: 0
         */
         int initCurrentlyRemembered() {
             BLUETOOTH_DEVICE_SEARCH_PARAMS searchCriteria;
@@ -54,12 +54,16 @@ class DevicesManager {
             do {
                 this->devices.push_back(deviceInfo);
             } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
+            return 0;
         }
         void printDevices() {
             std::cout << "currently paried:" <<  std::endl;
             for (int i = 0; i < this->devices.size(); i++) {
                 BLUETOOTH_DEVICE_INFO info = this->devices.at(i);
-                std::cout << info.szName << std::endl;
+                for (int i = 0; i < 31; i++) {
+                    std::cout << (char)info.szName[i];
+                }
+                std::cout << std::endl;
             }
         }
 };

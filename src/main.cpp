@@ -5,7 +5,7 @@ int main() {
     manager.initCurrentlyRemembered();
     manager.printDevices();
     
-    int a;
+    std::string a;
     std::cin >> a;
     return 0;
 }
