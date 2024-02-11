@@ -101,7 +101,7 @@ class DevicesManagerClient {
             nonBlockRet = ioctlsocket(socketft, FIONBIO, &mode);
 
             if (nonBlockRet == SOCKET_ERROR) {
-                return -3; // fuck you ig
+                return -3;
             }
             
 
