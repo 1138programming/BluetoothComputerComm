@@ -2,10 +2,14 @@
 
 int main() {
     DevicesManager manager;
-    manager.initCurrentlyRemembered();
+    int d = manager.initCurrentlyRemembered();
     manager.printDevices();
+    int a = manager.connectToFirstInitialized();
+    int b = manager.sendDataToFirstConnected(&std::string("HELLO!"));
     
-    std::string a;
-    std::cin >> a;
+    std::cout << d << " && " << a << " && " << b << std::endl;
+
+    std::string c;
+    std::cin >> c;
     return 0;
 }

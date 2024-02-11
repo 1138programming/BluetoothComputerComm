@@ -23,6 +23,7 @@
 class DevicesManager {
     private:
         std::vector<BLUETOOTH_DEVICE_INFO> devices;
+        std::vector<SOCKET> connections;
     public:
         /**
          * @return SOCKET ERORR: -1 = NO DEVICES CONNECTED
@@ -56,6 +57,68 @@ class DevicesManager {
             } while (BluetoothFindNextDevice(foundDevice, &deviceInfo));
             return 0;
         }
+
+        /**
+         * Returns:
+         * -40452: None initialized
+         * -1: socket init failed
+         * 0: successful
+        */
+        int connectToFirstInitialized() {
+            // check if none initialized
+            if (this->devices.size() == 0) {
+                return -40452;
+            }
+
+            //just get first one for now
+            BLUETOOTH_DEVICE_INFO info = this->devices.at(0);
+
+            SOCKET socketft = INVALID_SOCKET; // socket file type
+            // assumes the socket is using bluetooth
+            socketft = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+            if (socketft == INVALID_SOCKET) {
+                return INVALID_SOCKET;
+            }
+            // set up socket address
+            SOCKADDR_BTH addr;
+                addr.addressFamily = AF_BTH;
+                addr.btAddr = info.Address.ullLong;
+                addr.serviceClassId = RFCOMM_PROTOCOL_UUID;
+                addr.port = 0;
+
+            // hoping this works :prayer:
+            connect(socketft, reinterpret_cast<sockaddr*>(&addr), sizeof(addr));
+            this->connections.push_back(socketft);
+
+            // maybe not :skull:
+            return 0;
+        }
+
+        int sendDataToFirstConnected(std::string* data) {
+            // check to make sure there is a connection
+            if (this->connections.size() == 0) {
+                return -40452;
+            }
+            SOCKET socketft = this->connections.at(0);
+            // static casting bc function expecting int && example code does it :shrug:
+            return send(socketft, data->c_str(), static_cast<int>(data->size()), MSG_BCAST);
+        }
+
+        std::vector<BYTE> getDataFromFirstConnected() {
+            if (this->connections.size() == 0) {
+                std::vector<BYTE> nullret;
+                nullret.push_back(-40452);
+                return nullret;
+            }
+
+            SOCKET soc = this->connections.at(0);
+            
+            const int bufLen = 1024;
+            BYTE buf[bufLen];
+
+            int ret = recv(soc, (char*)buf, (bufLen/2) - 1, MSG_BCAST);
+        }
+
         void printDevices() {
             std::cout << "currently paried:" <<  std::endl;
             for (int i = 0; i < this->devices.size(); i++) {
