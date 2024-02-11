@@ -117,6 +117,30 @@ class DevicesManager {
             BYTE buf[bufLen];
 
             int ret = recv(soc, (char*)buf, (bufLen/2) - 1, MSG_BCAST);
+            if (ret != SOCKET_ERROR) {
+                ((char*)buf)[bufLen/2] = '\0';
+            }
+            // get return vector and return
+            std::vector<BYTE> returnVal;
+            returnVal.reserve(bufLen);
+            for (int i = 0; i < bufLen; i++) {
+                returnVal.push_back(buf[i]);
+            }
+            return returnVal;
+        }
+
+        std::string getDataFromFirstConnectedAsString() {
+            std::vector<BYTE> byteData = getDataFromFirstConnected();
+
+            //convert to byte[]
+            BYTE* byteArr = (BYTE*)malloc(sizeof(BYTE) * byteData.size());
+            for (int i = 0; i < byteData.size(); i++) {
+                byteArr[i] = byteData.at(i);
+            }
+            std::string returnVal((char*)byteArr);
+            // free malloc()ed arr
+            free(byteArr);
+            return returnVal;
         }
 
         void printDevices() {
