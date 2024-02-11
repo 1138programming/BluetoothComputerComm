@@ -1,7 +1,8 @@
-#include "devicesManager.hpp"
+#include "devicesManagerClient.hpp"
 
 int main() {
-    DevicesManager manager;
+    DevicesManagerClient manager;
+    manager.initAll();
     int d = manager.initCurrentlyRemembered();
     manager.printDevices();
     int a = manager.connectToFirstInitialized();
@@ -11,5 +12,6 @@ int main() {
 
     std::string c;
     std::cin >> c;
+    manager.close();
     return 0;
 }
