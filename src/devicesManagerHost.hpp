@@ -14,6 +14,7 @@
 #include <bluetoothapis.h>
 #include <WinSock2.h>
 #include <ws2bth.h>
+#include <synchapi.h>
 
 // Link with Bluetooth lib
 #pragma comment(lib, "Bthprops.lib")
@@ -48,10 +49,15 @@ class DevicesManagerHost {
             return WSACleanup();
         }
         int startAccept() {
-            // idk
-            acceptExBuf.reserve(addrSize);
+            // idk- creating client && server?
+            acceptExBuf.reserve(addrSize * 4);
+
+            // init socket- may neeed to change values
+            sock = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
+
             // docs tell me to (https://learn.microsoft.com/en-us/windows/win32/api/mswsock/nf-mswsock-acceptex)
-            //listen(sock, SOMAXCONN);
+            // yea the socket needs to be listening for this...
+            listen(sock, SOMAXCONN);
 
             std::cout << "ckpt1" << std::endl;
 
@@ -65,7 +71,6 @@ class DevicesManagerHost {
                 DWORD numBytes = 0;
 
                 std::cout << "ckpt3" << std::endl;
-                sock = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
                 success = WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr), &numBytes, nullptr, nullptr);
                 if (success != 0) {
                     return WSAGetLastError();
@@ -75,8 +80,10 @@ class DevicesManagerHost {
             }
 
             OVERLAPPED overlap;
-            overlap.hEvent = (HANDLE)nullptr;
-            success = acceptExPtr(sock, clientSocket, acceptExBuf.data(), 0, addrSize, addrSize, &bytesRecvd, &overlap);
+                // a handle is required so we just make one that tells it to do nothing lol
+                overlap.hEvent = CreateEventA(nullptr, false, false, nullptr);
+            
+            //success = acceptExPtr(sock, clientSocket, acceptExBuf.data(), 0, addrSize, addrSize, &bytesRecvd, &overlap);
             if (success == false) {
                 return WSAGetLastError();
             }

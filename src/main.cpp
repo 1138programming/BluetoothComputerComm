@@ -1,12 +1,13 @@
 #include "devicesManagerClient.hpp"
 #include "devicesManagerHost.hpp"
+#include "devicesManagerHost2.hpp"
 
 int main() {
-    DevicesManagerHost manager;
-    manager.initAll();
+    DevicesManagerHostTwo manager;
+    int c = manager.initAll();
     int b = manager.startAccept();
     int a;
-    std::cout << b;
+    std::cout << c << " + " <<  b;
     std::cin >> a;
     return 0;
 }
