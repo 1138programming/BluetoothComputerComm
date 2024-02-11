@@ -22,7 +22,6 @@
 // normal includes
 #include <vector>
 #include <iostream>
-#include <coroutine> // IWYU pragma: keep
 
 
 class DevicesManagerHost {
@@ -36,27 +35,50 @@ class DevicesManagerHost {
         // according to docs, this is the minimum size (https://learn.microsoft.com/en-us/windows/win32/api/mswsock/nf-mswsock-acceptex)
         const DWORD addrSize = sizeof(sockaddr_storage) + 16; 
     public:
+        static int handler() {
+            std::cout << "first try 😎" << std::endl;
+            return 0;
+        }
+        int initAll() {
+            // Start Winsock on Windows
+            WSADATA wsaData;
+            return WSAStartup(MAKEWORD(2, 2), &wsaData); // MAKEWORD(2, 2) for Winsock 2.2
+        }
+        int cleanup() {
+            return WSACleanup();
+        }
         int startAccept() {
             // idk
             acceptExBuf.reserve(addrSize);
             // docs tell me to (https://learn.microsoft.com/en-us/windows/win32/api/mswsock/nf-mswsock-acceptex)
-            listen(sock, SOMAXCONN);
+            //listen(sock, SOMAXCONN);
+
+            std::cout << "ckpt1" << std::endl;
 
             static LPFN_ACCEPTEX acceptExPtr = nullptr;
             int success;
+
+            std::cout << "ckpt2" << std::endl;
 
             if (!acceptExPtr) {
                 GUID guid = WSAID_ACCEPTEX;
                 DWORD numBytes = 0;
 
+                std::cout << "ckpt3" << std::endl;
+                sock = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
                 success = WSAIoctl(sock, SIO_GET_EXTENSION_FUNCTION_POINTER, &guid, sizeof(guid), &acceptExPtr, sizeof(acceptExPtr), &numBytes, nullptr, nullptr);
                 if (success != 0) {
-                    return -1;
+                    return WSAGetLastError();
                 }
+
+                std::cout << "ckpt4" << std::endl;
             }
-            success = acceptExPtr(sock, clientSocket, acceptExBuf.data(), 0, addrSize, addrSize, &bytesRecvd, );
-            if (success != 0) {
-                return -2;
+
+            OVERLAPPED overlap;
+            overlap.hEvent = (HANDLE)nullptr;
+            success = acceptExPtr(sock, clientSocket, acceptExBuf.data(), 0, addrSize, addrSize, &bytesRecvd, &overlap);
+            if (success == false) {
+                return WSAGetLastError();
             }
             return 0;
         }

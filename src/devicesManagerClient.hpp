@@ -6,6 +6,9 @@
 #include <windows.h>
 #include <stdlib.h>
 #pragma comment(lib, "ws2_32.lib")
+// Link with Bluetooth lib
+#pragma comment(lib, "Bthprops.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 #include <WS2tcpip.h>
 #include <ws2tcpip.h>
@@ -14,9 +17,6 @@
 #include <WinSock2.h>
 #include <ws2bth.h>
 
-// Link with Bluetooth lib
-#pragma comment(lib, "Bthprops.lib")
-#pragma comment(lib, "Ws2_32.lib")
 
 // normal includes
 #include <vector>
