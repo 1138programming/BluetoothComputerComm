@@ -53,27 +53,34 @@ class DevicesManagerHostTwo {
             // create a BluetoothAddress to add to the SOCKADDR_BTH (THIS MAY BE WRONG)
             // please make sure to note that the bytes are little-endian (ask Jonathan)
             BLUETOOTH_ADDRESS addr;
-                addr.rgBytes[0] = 0x0;
-                addr.rgBytes[1] = 0x0;
-                addr.rgBytes[2] = 0x0;
-                addr.rgBytes[3] = 0x0;
-                addr.rgBytes[4] = 0x0;
-                addr.rgBytes[5] = 0x10;
+                // addr.rgBytes[0] = 0x9C;
+                // addr.rgBytes[1] = 0x90;
+                // addr.rgBytes[2] = 0x90;
+                // addr.rgBytes[3] = 0X8A;
+                // addr.rgBytes[4] = 0x4F;
+                // addr.rgBytes[5] = 0x14;
+                addr.ullLong = 280;
+
+            //14:4F:8A:90:90:9C
 
             // create a bluetooth socket
             SOCKADDR_BTH listenerAddr;
                 listenerAddr.addressFamily = AF_BTH;
                 // if 0 = random port
                 // setting this to 0 = work, but not great for what we want to do.
-                listenerAddr.btAddr = addr.ullLong;
-                listenerAddr.port = 20;
+                listenerAddr.btAddr = 0;
+                listenerAddr.port = 4;
+
+
+            std::cout << "ckpt0" << std::endl;
             
             // bind to the Bluetooth Socket
             // success checks if there is an error value...
-            int success = bind(listener, (sockaddr*)&listenerAddr, sizeof(listenerAddr));
-            if (success == SOCKET_ERROR) {
+            int success = bind(listener, reinterpret_cast<sockaddr*>(&listenerAddr), sizeof(listenerAddr));
+            if (success != 0) {
                 return WSAGetLastError();
-            }
+            }            
+            std::cout << "Listening on socket " << listener << std::endl;
             
             // all "ckpt" std::couts are just for debugging
             std::cout << "ckpt1" << std::endl;
@@ -89,7 +96,7 @@ class DevicesManagerHostTwo {
             int addrSize = sizeof(externalAddress);
             // blocking function lol- accepts connection, but doesn't get any data about the devices
             connection = accept(listener, nullptr, nullptr);
-            if (connection == INVALID_SOCKET) {
+            if (connection != 0) {
                 return WSAGetLastError();
             }
 
