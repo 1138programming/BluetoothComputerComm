@@ -47,30 +47,39 @@ class DevicesManagerHostTwo {
             return WSACleanup();
         }
         int startAccept() {
-
+            // initialize a windows socket in bluetooth mode
             listener = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
 
+            // create a BluetoothAddress to add to the SOCKADDR_BTH (THIS MAY BE WRONG)
+            // please make sure to note that the bytes are little-endian (ask Jonathan)
             BLUETOOTH_ADDRESS addr;
-                addr.rgBytes[0] = 0xb9;
-                addr.rgBytes[1] = 0x10;
-                addr.rgBytes[2] = 0x56;
-                addr.rgBytes[3] = 0x21;
-                addr.rgBytes[4] = 0x66;
-                addr.rgBytes[5] = 0x90;
+                addr.rgBytes[0] = 0x0;
+                addr.rgBytes[1] = 0x0;
+                addr.rgBytes[2] = 0x0;
+                addr.rgBytes[3] = 0x0;
+                addr.rgBytes[4] = 0x0;
+                addr.rgBytes[5] = 0x10;
 
+            // create a bluetooth socket
             SOCKADDR_BTH listenerAddr;
                 listenerAddr.addressFamily = AF_BTH;
-                listenerAddr.btAddr = 0;
+                // if 0 = random port
+                // setting this to 0 = work, but not great for what we want to do.
+                listenerAddr.btAddr = addr.ullLong;
                 listenerAddr.port = 20;
             
+            // bind to the Bluetooth Socket
+            // success checks if there is an error value...
             int success = bind(listener, (sockaddr*)&listenerAddr, sizeof(listenerAddr));
             if (success == SOCKET_ERROR) {
                 return WSAGetLastError();
             }
-
+            
+            // all "ckpt" std::couts are just for debugging
             std::cout << "ckpt1" << std::endl;
 
-            success = listen(listener, SOMAXCONN);
+            // set listener up for connection(?)
+            success = listen(listener, 8);
             if (success != 0) {
                 return WSAGetLastError();
             }
@@ -78,6 +87,7 @@ class DevicesManagerHostTwo {
             std::cout << "ckpt2" << std::endl;
 
             int addrSize = sizeof(externalAddress);
+            // blocking function lol- accepts connection, but doesn't get any data about the devices
             connection = accept(listener, nullptr, nullptr);
             if (connection == INVALID_SOCKET) {
                 return WSAGetLastError();
@@ -86,10 +96,10 @@ class DevicesManagerHostTwo {
             std::cout << "ckpt3" << std::endl;
 
             // print address if successfully connected
-            for (int i = 0; i < 14; i++) {
-                std::cout << externalAddress.sa_data[i];
-            }
-            std::cout << std::endl;
+            // for (int i = 0; i < 14; i++) {
+            //     std::cout << externalAddress.sa_data[i];
+            // }
+            // std::cout << std::endl;
             return 0;
         }
 };
