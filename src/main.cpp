@@ -9,5 +9,6 @@ int main() {
     int a;
     std::cout << c << " + " <<  b;
     std::cin >> a;
+    manager.cleanup();
     return 0;
 }
