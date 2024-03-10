@@ -51,13 +51,27 @@ class DevicesManagerHostTwo {
         int cleanup() {
             return WSACleanup();
         }
+
+        //useful functions
+        void printBTNameHex(BTH_ADDR addr) {
+            std::cout << std::hex;
+            BYTE* nameInBytes = (BYTE*)&(addr);
+            for (int i = 0; i < 5; i++) {
+                std::cout << (int)(nameInBytes[i]) << ":";
+            }
+            std::cout << (int)(nameInBytes[5]) << std::endl;
+            std::cout << std::dec;
+        }
+        void checkSuccess() {
+            
+        }
         int startAccept() {
             // initialize a windows socket in bluetooth mode
             listener = socket(AF_BTH, SOCK_STREAM, BTHPROTO_RFCOMM);
 
             // create a BluetoothAddress to add to the SOCKADDR_BTH (THIS MAY BE WRONG)
             // please make sure to note that the bytes are little-endian (ask Jonathan)
-            BLUETOOTH_ADDRESS addr;
+            //BLUETOOTH_ADDRESS addr;
                 // addr.rgBytes[0] = 0x9C;
                 // addr.rgBytes[1] = 0x90;
                 // addr.rgBytes[2] = 0x90;
@@ -76,6 +90,7 @@ class DevicesManagerHostTwo {
                 // setting this to 0 = work, but not great for what we want to do.
                 listenerAddr.btAddr = 0;
                 listenerAddr.port = BT_PORT_ANY;
+                // p sure this will be ignored lol
                 listenerAddr.serviceClassId = MY_GUID;
 
             std::cout << "ckpt0" << std::endl;
@@ -85,29 +100,21 @@ class DevicesManagerHostTwo {
             int success = bind(listener, reinterpret_cast<sockaddr*>(&listenerAddr), sizeof(listenerAddr));
             if (success != 0) {
                 return WSAGetLastError();
-            }            
-
-            // get socket data
-            BLUETOOTH_ADDRESS nameLol;
-
-            int ushortSize = sizeof(USHORT);
-            int byteSize = sizeof(BYTE);
-            int whatINeedLol = 6;
-            for (int i = 0; i < 6; i++) {
-                nameLol.rgBytes[i] = 0;
             }
 
-            std::cout << "ckpt-1" << std::endl;
 
-            // success = getsockname(listener, reinterpret_cast<sockaddr*>(&nameLol), &whatINeedLol);
-            // if (success != 0) {
-            //     return WSAGetLastError();
-            // }
-            // std::cout << "Listening on socket: ";
-            // for (int i = 0; i < 16; i++) {
-            //     std::cout << std::hex << ((int)nameLol.rgBytes[i]) + ":";
-            // }
-            // std::cout << std::dec << std::endl;
+            std::cout << "ckpt-405" << std::endl;
+
+            // get socket data
+            SOCKADDR_BTH socketName = {0};
+            int socketNameLen = sizeof(socketName);
+            if (getsockname(listener, reinterpret_cast<sockaddr*>(&socketName), &socketNameLen) != 0) {
+                std::cerr << "no name lol" << std::endl;
+                return WSAGetLastError();
+            }
+            
+            // print name in hex
+            printBTNameHex(socketName.btAddr);
             
             // all "ckpt" std::couts are just for debugging
             std::cout << "ckpt1" << std::endl;
