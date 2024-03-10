@@ -63,7 +63,7 @@ class DevicesManagerHostTwo {
             std::cout << std::dec;
         }
         void checkSuccess() {
-            
+
         }
         int startAccept() {
             // initialize a windows socket in bluetooth mode
@@ -115,6 +115,7 @@ class DevicesManagerHostTwo {
             
             // print name in hex
             printBTNameHex(socketName.btAddr);
+            std::cout << "port: " << socketName.port << std::endl;
             
             // all "ckpt" std::couts are just for debugging
             std::cout << "ckpt1" << std::endl;
