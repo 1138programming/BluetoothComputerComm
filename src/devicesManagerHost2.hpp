@@ -117,6 +117,26 @@ class DevicesManagerHostTwo {
             printBTNameHex(socketName.btAddr);
             std::cout << "port: " << socketName.port << std::endl;
             
+            LPCSADDR_INFO wsaQueryInfo = (CSADDR_INFO*)calloc(1,sizeof(CSADDR_INFO));
+                wsaQueryInfo->LocalAddr.iSockaddrLength = sizeof(SOCKADDR_BTH);
+                wsaQueryInfo->LocalAddr.lpSockaddr = (LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->RemoteAddr.iSockaddrLength = sizeof(SOCKADDR_BTH);
+                wsaQueryInfo->RemoteAddr.lpSockaddr = (LPSOCKADDR)&listenerAddr;
+                wsaQueryInfo->iSocketType = SOCK_STREAM;
+                wsaQueryInfo->iProtocol = BTHPROTO_RFCOMM;
+            WSAQUERYSET wsaQuery = {0};
+                wsaQuery.dwSize = sizeof(WSAQUERYSET);
+                wsaQuery.lpServiceClassId = (LPGUID)&MY_GUID;
+                wsaQuery.lpszServiceInstanceName = (LPSTR)L"LOL";
+                wsaQuery.lpszComment = (LPSTR)L"Example Service instance registered in the directory service through RnR";
+                wsaQuery.dwNameSpace = NS_BTH;
+                wsaQuery.dwNumberOfCsAddrs = 1; // must be 1 ig
+                wsaQuery.lpcsaBuffer;
+            if (WSASetService(&wsaQuery, RNRSERVICE_REGISTER, 0) == SOCKET_ERROR) {
+                std::cerr << "service not set" << std::endl;
+                return WSAGetLastError();
+            }
+
             // all "ckpt" std::couts are just for debugging
             std::cout << "ckpt1" << std::endl;
 
