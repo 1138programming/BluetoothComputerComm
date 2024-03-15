@@ -102,7 +102,7 @@ class DevicesManagerHostTwo {
                 // if 0 = random port
                 // setting this to 0 = work, but not great for what we want to do.
                 listenerAddr.btAddr = 0;
-                listenerAddr.port = BT_PORT_ANY;
+                listenerAddr.port = 3;
                 // p sure this will be ignored lol
                 listenerAddr.serviceClassId = MY_GUID;
 
@@ -185,6 +185,12 @@ class DevicesManagerHostTwo {
             // }
             // std::cout << std::endl;
             return 0;
+        }
+        void readFromConnectionAndPrint() {
+            char* cxnRcv = (char*)calloc(5, sizeof(char));
+            recv(connection, cxnRcv, 4, 0);
+            std::cout << cxnRcv << std::endl;
+            free(cxnRcv);
         }
 };
 
