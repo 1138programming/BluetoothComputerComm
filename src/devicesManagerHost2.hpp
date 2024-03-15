@@ -62,6 +62,19 @@ class DevicesManagerHostTwo {
             std::cout << (int)(nameInBytes[5]) << std::endl;
             std::cout << std::dec;
         }
+        int getHostNameStr(std::string* str) {
+            char* ptr = (char*)calloc(256, sizeof(char));
+            if (ptr == NULL) {
+                return -1;
+            }
+            if (gethostname(ptr, 256) != 0) {
+                return -1;
+            }
+
+            (*str) = std::string(ptr);
+            free(ptr);
+            return 0;
+        }
         void checkSuccess() {
 
         }
@@ -124,15 +137,22 @@ class DevicesManagerHostTwo {
                 wsaQueryInfo->RemoteAddr.lpSockaddr = (LPSOCKADDR)&listenerAddr;
                 wsaQueryInfo->iSocketType = SOCK_STREAM;
                 wsaQueryInfo->iProtocol = BTHPROTO_RFCOMM;
-            WSAQUERYSET wsaQuery = {0};
-                wsaQuery.dwSize = sizeof(WSAQUERYSET);
+
+            std::string lpzServiceInstanceNameLocal;
+            if (getHostNameStr(&lpzServiceInstanceNameLocal) != 0) {
+                std::cerr << "getHostName Failed";
+                return WSAGetLastError();
+            }
+            WSAQUERYSETA wsaQuery = {0};
+                wsaQuery.dwSize = sizeof(WSAQUERYSETA);
+                wsaQuery.lpszServiceInstanceName = (LPSTR)lpzServiceInstanceNameLocal.c_str();
                 wsaQuery.lpServiceClassId = (LPGUID)&MY_GUID;
-                wsaQuery.lpszServiceInstanceName = (LPSTR)L"LOL";
                 wsaQuery.lpszComment = (LPSTR)L"Example Service instance registered in the directory service through RnR";
                 wsaQuery.dwNameSpace = NS_BTH;
+                wsaQuery.dwNumberOfProtocols = 0;
                 wsaQuery.dwNumberOfCsAddrs = 1; // must be 1 ig
-                wsaQuery.lpcsaBuffer;
-            if (WSASetService(&wsaQuery, RNRSERVICE_REGISTER, 0) == SOCKET_ERROR) {
+                wsaQuery.lpcsaBuffer = wsaQueryInfo;
+            if (WSASetServiceA(&wsaQuery, RNRSERVICE_REGISTER, 0) == SOCKET_ERROR) {
                 std::cerr << "service not set" << std::endl;
                 return WSAGetLastError();
             }
